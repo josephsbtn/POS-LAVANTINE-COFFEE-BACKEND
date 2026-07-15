@@ -1,28 +1,37 @@
 import express from "express";
 import cors from "cors";
-import { requestLogger, errorLogger, logger } from "./utils/logger";
-import { dbconnect } from "./database/client";
-import { env } from "./config/env";
+import { requestLogger, errorLogger } from "./utils/logger";
 import { corsConfig } from "./config/CorsConfig";
+import { errorHandler } from "./middleware/error.middleware";
+import authRoutes from "./modules/auth/auth.routes";
 
-export const createApp = async () => {
+export const createApp = () => {
   const app = express();
-  await dbconnect(env.MONGO_URI);
+
   app.use(express.json({ limit: "5mb" }));
   app.use(cors(corsConfig));
   app.use(requestLogger);
 
-  app.use("/health", (req, res) => {
-    const message = {
-      status: "ok",
-      database: "ok",
-      webSocket: "ok",
-    };
-    logger.info("Health check endpoint called", message);
-    res.status(200).json(message);
+  // Static files for uploads (bisa diakses frontend via /uploads/items/namafile.jpg)
+  app.use("/uploads", express.static("public/uploads"));
+
+  // Routes
+  app.use("/api/auth", authRoutes);
+
+  app.use("/health", (_req, res) => {
+    res.status(200).json({
+      success: true,
+      message: "Server is healthy",
+      data: {
+        status: "ok",
+        uptime: process.uptime(),
+      },
+    });
   });
 
+  // Error logging then error handler (must be last)
   app.use(errorLogger);
+  app.use(errorHandler);
 
   return app;
 };

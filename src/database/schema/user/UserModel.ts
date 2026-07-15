@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-
-const enumRole = ["STAFF", "MANAGER"];
+import { Role } from "../../../shared/types/Role";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -12,11 +11,10 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      select: false,
     },
     role: {
       type: String,
-      enum: enumRole,
+      enum: Object.values(Role),
       required: true,
       index: true,
     },
@@ -36,3 +34,6 @@ const UserSchema = new mongoose.Schema(
 );
 
 const UserModel = mongoose.model("User", UserSchema);
+export default UserModel;
+
+export type UserType = mongoose.InferSchemaType<typeof UserSchema>;

@@ -1,40 +1,21 @@
-import util from "node:util";
+import pino from "pino";
 import type { Request, Response, NextFunction } from "express";
+import { env } from "../config/env";
 
-const LEVELS = {
-  error: "ERROR",
-  warn: "WARN ",
-  info: "INFO ",
-  debug: "DEBUG",
-} as const;
-
-const formatMessage = (level: string, message: string) => {
-  const timestamp = new Date().toISOString();
-  return `${timestamp} [${level}] ${message}`;
-};
-
-const write = (level: keyof typeof LEVELS, message: string, meta?: unknown) => {
-  const formatted = formatMessage(LEVELS[level], message);
-
-  if (meta !== undefined) {
-    console[level === "error" ? "error" : level](
-      formatted,
-      typeof meta === "string"
-        ? meta
-        : util.inspect(meta, { depth: 5, colors: false }),
-    );
-    return;
-  }
-
-  console[level === "error" ? "error" : level](formatted);
-};
-
-export const logger = {
-  error: (message: string, meta?: unknown) => write("error", message, meta),
-  warn: (message: string, meta?: unknown) => write("warn", message, meta),
-  info: (message: string, meta?: unknown) => write("info", message, meta),
-  debug: (message: string, meta?: unknown) => write("debug", message, meta),
-};
+export const logger = pino({
+  level: env.NODE_ENV === "PROD" ? "info" : "debug",
+  transport:
+    env.NODE_ENV !== "PROD"
+      ? {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:yyyy-mm-dd HH:MM:ss",
+            ignore: "pid,hostname",
+          },
+        }
+      : undefined,
+});
 
 export const requestLogger = (
   req: Request,
@@ -59,11 +40,14 @@ export const errorLogger = (
   res: Response,
   next: NextFunction,
 ) => {
-  logger.error("Request pipeline error", {
-    path: req.originalUrl,
-    method: req.method,
-    status: res.statusCode,
-    error: error instanceof Error ? (error.stack ?? error.message) : error,
-  });
+  logger.error(
+    {
+      path: req.originalUrl,
+      method: req.method,
+      status: res.statusCode,
+      error: error instanceof Error ? error.message : error,
+    },
+    "Request pipeline error",
+  );
   next(error);
 };

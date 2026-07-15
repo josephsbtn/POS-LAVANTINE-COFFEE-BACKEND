@@ -4,6 +4,9 @@ import {
   paymentMethod,
   transactionType,
 } from "../../../modules/transactions/transaction.types";
+import { TransactionItemsSchema } from "./TransactionItems";
+import { TransactionDiscountSchema } from "./TransactionDiscount";
+import { type } from "os";
 const TransanctionSchema = new mongoose.Schema(
   {
     invoiceNumber: {
@@ -22,6 +25,11 @@ const TransanctionSchema = new mongoose.Schema(
       enum: Object.values(transactionType),
       required: true,
       index: true,
+    },
+    items: [TransactionItemsSchema],
+    totalItems: {
+      type: Number,
+      default: 0,
     },
     paymentMethod: {
       type: String,
@@ -43,23 +51,17 @@ const TransanctionSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
-    discount: {
-      type: {
-        discountId: {
-          type: mongoose.Types.ObjectId,
-          ref: "discount",
-        },
-        name: {
-          type: String,
-        },
-        discountNominal: {
-          type: Number,
-        },
-      },
-
-      default: {},
+    discount: TransactionDiscountSchema,
+    status: {
+      type: String,
+      enum: Object.values(transactionStatus),
     },
-    items: [],
+    total: {
+      type: Number,
+      default: 0,
+      min: 0,
+      required: true,
+    },
   },
   {
     timestamps: true,
@@ -68,3 +70,9 @@ const TransanctionSchema = new mongoose.Schema(
 
 TransanctionSchema.index({ status: 1, createdAt: -1 });
 TransanctionSchema.index({ cashier: 1, createdAt: -1 });
+
+const TransactionsModel = mongoose.model("transaction", TransanctionSchema);
+export type TypeTransactionSchema = mongoose.InferSchemaType<
+  typeof TransanctionSchema
+>;
+export default TransactionsModel;

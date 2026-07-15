@@ -1,5 +1,4 @@
-import { z, ZodEnum } from "zod";
-import { logger } from "../utils/logger";
+import { z } from "zod";
 
 const nodeEnum = z.enum(["DEV", "PROD"]);
 
@@ -13,16 +12,14 @@ const envSchema = z.object({
   MONGO_URI: z.string(),
   REDIS_URL: z.string(),
 
-  JWT_SECRET: z.string(),
+  JWT_SECRET: z.string().min(32),
+  JWT_EXPIRES_IN: z.string().default("1d"),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  logger.error("Invalid environment variables", parsed.error.format());
-  logger.error(
-    "Please check your .env file and ensure all required variables are set.",
-  );
+  console.error("Invalid environment variables:", parsed.error.format());
   process.exit(1);
 }
 

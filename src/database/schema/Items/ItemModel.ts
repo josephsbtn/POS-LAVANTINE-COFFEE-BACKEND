@@ -1,5 +1,15 @@
 import mongoose from "mongoose";
-import { privateDecrypt } from "node:crypto";
+
+export const AddonSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+});
 
 const ItemSchema = new mongoose.Schema(
   {
@@ -27,6 +37,13 @@ const ItemSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    modifier: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "modifier",
+      },
+    ],
+    addon: [AddonSchema],
   },
   {
     timestamps: true,
