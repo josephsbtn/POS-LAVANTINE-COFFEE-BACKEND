@@ -12,6 +12,7 @@ export const dbconnect = async (uri: string) => {
       maxPoolSize: 50,
       autoCreate: env.NODE_ENV !== "PROD",
       autoIndex: env.NODE_ENV !== "PROD",
+      family: 4, // Force IPv4 to bypass Windows/Node DNS SRV bugs
     });
     connected = true;
 

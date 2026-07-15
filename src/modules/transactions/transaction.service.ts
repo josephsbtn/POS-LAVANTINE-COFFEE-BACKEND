@@ -8,6 +8,7 @@ import {
   transactionStatus,
 } from "./transaction.types";
 import { errorLogger, logger } from "../../utils/logger";
+import { randomInt } from "crypto";
 
 export class TransactionService {
   constructor(private readonly repo: TransactionRepo) {}
@@ -70,9 +71,10 @@ export class TransactionService {
 
       payload.items = mappedItems;
       payload.subtotal = grandTotal;
+      payload.invoiceNumber = "#LVC-" + randomInt(100, 999) + "-" + Date.now();
 
-      const discountAmount = payload.discount?.value || 0;
-      const total = Math.max(0, grandTotal - discountAmount);
+      const discountAmount = (payload.discount?.value || 0) / 100;
+      const total = Math.max(0, grandTotal - grandTotal * discountAmount);
 
       const payloadToSave = {
         ...payload,

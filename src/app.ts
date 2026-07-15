@@ -4,6 +4,7 @@ import { requestLogger, errorLogger } from "./utils/logger";
 import { corsConfig } from "./config/CorsConfig";
 import { errorHandler } from "./middleware/error.middleware";
 import authRoutes from "./modules/auth/auth.routes";
+import masterRoutes from "./modules/master/master.routes";
 
 export const createApp = () => {
   const app = express();
@@ -17,6 +18,7 @@ export const createApp = () => {
 
   // Routes
   app.use("/api/auth", authRoutes);
+  app.use("/api/master", masterRoutes);
 
   app.use("/health", (_req, res) => {
     res.status(200).json({

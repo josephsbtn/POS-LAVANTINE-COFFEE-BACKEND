@@ -6,7 +6,7 @@ import {
 } from "../../../modules/transactions/transaction.types";
 import { TransactionItemsSchema } from "./TransactionItems";
 import { TransactionDiscountSchema } from "./TransactionDiscount";
-import { type } from "os";
+
 const TransanctionSchema = new mongoose.Schema(
   {
     invoiceNumber: {
