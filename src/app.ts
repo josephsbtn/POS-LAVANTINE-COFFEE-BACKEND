@@ -6,6 +6,8 @@ import { errorHandler } from "./middleware/error.middleware";
 import authRoutes from "./modules/auth/auth.routes";
 import masterRoutes from "./modules/master/master.routes";
 import transactionRoutes from "./modules/transactions/transaction.routes";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
 
 export const createApp = () => {
   const app = express();
@@ -16,6 +18,9 @@ export const createApp = () => {
 
   // Static files for uploads (bisa diakses frontend via /uploads/items/namafile.jpg)
   app.use("/uploads", express.static("public/uploads"));
+
+  // Swagger UI
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   // Routes
   app.use("/api/auth", authRoutes);
