@@ -17,7 +17,8 @@
   "scripts": {
     "dev": "nodemon --watch . --ext ts --exec tsx server.ts",
     "seed:admin": "tsx src/scripts/seedAdmin.ts",
-    "seed:master": "tsx src/scripts/seedMasterData.ts"
+    "seed:master": "tsx src/scripts/seedMasterData.ts",
+    "test:api": "tsx src/scripts/test-all-endpoints.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
