@@ -2,7 +2,7 @@ import { Router } from "express";
 import { ItemController } from "./item.controller";
 import { ItemService } from "./item.service";
 import { ItemRepo } from "./item.repo";
-import { uploadItemImage } from "../../../middleware/upload.middleware";
+import { handleSingleUpload } from "../../../middleware/upload.middleware";
 import { validateRequest } from "../../../middleware/validate.middleware";
 import { createItemSchema, updateItemSchema } from "./item.validation";
 
@@ -14,7 +14,6 @@ const controller = new ItemController(service);
 
 import { authenticate } from "../../../middleware/auth.middleware";
 
-// Protected routes
 itemRoutes.use(authenticate());
 
 /**
@@ -81,7 +80,12 @@ itemRoutes.get("/:id", controller.getById);
  *       201:
  *         description: Item created
  */
-itemRoutes.post("/", uploadItemImage.single("image"), validateRequest(createItemSchema), controller.create);
+itemRoutes.post(
+  "/",
+  handleSingleUpload("image"),
+  validateRequest(createItemSchema),
+  controller.create,
+);
 
 /**
  * @swagger
@@ -119,7 +123,12 @@ itemRoutes.post("/", uploadItemImage.single("image"), validateRequest(createItem
  *       200:
  *         description: Item updated
  */
-itemRoutes.put("/:id", uploadItemImage.single("image"), validateRequest(updateItemSchema), controller.update);
+itemRoutes.put(
+  "/:id",
+  handleSingleUpload("image"),
+  validateRequest(updateItemSchema),
+  controller.update,
+);
 
 /**
  * @swagger
