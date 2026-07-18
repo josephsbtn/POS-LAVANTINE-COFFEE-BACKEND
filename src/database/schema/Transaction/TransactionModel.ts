@@ -55,6 +55,7 @@ const TransanctionSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: Object.values(transactionStatus),
+      default: transactionStatus.PREPARING,
     },
     total: {
       type: Number,

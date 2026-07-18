@@ -45,4 +45,21 @@ export class TransactionController {
       next(error);
     }
   };
+
+  updateStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      if (!status) {
+        return ApiResponse.badRequest(res, "Status is required");
+      }
+      const result = await this.service.changeStatus(id, status);
+      if (!result) {
+        return ApiResponse.notFound(res, "Transaction not found");
+      }
+      return ApiResponse.success(res, result, "Successfully updated status");
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -1,6 +1,9 @@
 import { QueryOptions } from "../../database/BaseRepository";
 import { CacheHelper } from "../../infrastructure/cache/CacheHelper";
 import { TransactionCacheKeys } from "../../infrastructure/cache/KeyManager/Transaction.Key";
+import { DashboardCacheKeys } from "../../infrastructure/cache/KeyManager/Dashboard.Key";
+import { socketService } from "../../infrastructure/socket/SocketService";
+import { SocketEvents } from "../../infrastructure/socket/SocketEvents";
 import { TransactionRepo } from "./transactions.repo";
 import {
   ITransactionCreate,
@@ -31,12 +34,13 @@ export class TransactionService {
     try {
       const data = await CacheHelper.getOrSet(
         TransactionCacheKeys.detail(id),
-        async () => await this.repo.findById(id, {
-          populate: [
-            { path: "cashier", select: "username" },
-            { path: "items.itemId", select: "name price imageUrl" }
-          ]
-        }),
+        async () =>
+          await this.repo.findById(id, {
+            populate: [
+              { path: "cashier", select: "username" },
+              { path: "items.itemId", select: "name price imageUrl" },
+            ],
+          }),
       );
       return data;
     } catch (error) {
@@ -46,10 +50,13 @@ export class TransactionService {
 
   async changeStatus(id: string, status: transactionStatus) {
     try {
-      const [invalidate, result] = await Promise.all([
+      const [invalidate, invalidateDashboard, result] = await Promise.all([
         CacheHelper.invalidateByPattern(TransactionCacheKeys.PATTERN_ALL),
+        CacheHelper.invalidateByPattern(DashboardCacheKeys.PATTERN_ALL),
         this.repo.changeStatus(id, status),
       ]);
+      socketService.emit(SocketEvents.DASHBOARD_UPDATE, null);
+      socketService.emit(SocketEvents.TRANSACTION_HISTORY, null);
       logger.info(invalidate, "Invalidate Key");
       return result;
     } catch (error) {
@@ -90,11 +97,17 @@ export class TransactionService {
         total,
       } as unknown as ITransactionCreate;
 
-      const [invalidate, result] = await Promise.all([
-        CacheHelper.invalidateByPattern(TransactionCacheKeys.PATTERN_ALL),
-        this.repo.create(payloadToSave),
-      ]);
-      logger.info(invalidate, "Invalidate Key");
+      const [invalidateTransaction, invalidateDashboard, result] =
+        await Promise.all([
+          CacheHelper.invalidateByPattern(TransactionCacheKeys.PATTERN_ALL),
+          CacheHelper.invalidateByPattern(DashboardCacheKeys.PATTERN_ALL),
+          this.repo.create(payloadToSave),
+        ]);
+
+      socketService.emit(SocketEvents.TRANSACTION_CREATED, result);
+      socketService.emit(SocketEvents.DASHBOARD_UPDATE, null);
+      socketService.emit(SocketEvents.TRANSACTION_HISTORY, null);
+
       return result;
     } catch (error) {
       throw error;
@@ -103,10 +116,15 @@ export class TransactionService {
 
   async update(id: string, payload: Partial<ITransactionCreate>) {
     try {
-      const [invalidate, result] = await Promise.all([
+      const [invalidate, invalidateDashboard, result] = await Promise.all([
         CacheHelper.invalidateByPattern(TransactionCacheKeys.PATTERN_ALL),
+        CacheHelper.invalidateByPattern(DashboardCacheKeys.PATTERN_ALL),
         this.repo.update(id, payload),
       ]);
+
+      socketService.emit(SocketEvents.DASHBOARD_UPDATE, null);
+      socketService.emit(SocketEvents.TRANSACTION_HISTORY, null);
+
       logger.info(invalidate, "Invalidate Key");
       return result;
     } catch (error) {

@@ -43,5 +43,6 @@ transactionRoutes.use(authenticate());
 transactionRoutes.post("/", controller.create);
 transactionRoutes.post("/get-all", controller.getAll); // Note: getAll in controller expects req.body for filter options
 transactionRoutes.get("/:id", controller.getById);
+transactionRoutes.patch("/:id/status", controller.updateStatus);
 
 export default transactionRoutes;

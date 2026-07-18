@@ -11,6 +11,7 @@ import { buildBestSellerPipeline } from "./aggregation/bestseller.pipeline";
 import { buildUpsellingPipeline } from "./aggregation/upselling.pipeline";
 import { CacheHelper } from "../../infrastructure/cache/CacheHelper";
 import { buildDateMatchStage } from "./aggregation/utils";
+import { DashboardCacheKeys } from "../../infrastructure/cache/KeyManager/Dashboard.Key";
 
 export class DashboardService {
   constructor(private readonly repository: DashboardRepository) {}
@@ -23,12 +24,8 @@ export class DashboardService {
     return CacheHelper.getOrSet(key, fetcher, ttl);
   }
 
-  private generateCacheKey(prefix: string, query: any) {
-    return `dashboard:${prefix}:${JSON.stringify(query)}`;
-  }
-
   async getSummary(query: DashboardFilterQuery) {
-    const cacheKey = this.generateCacheKey("summary", query);
+    const cacheKey = DashboardCacheKeys.dynamic("summary", query);
     return this.getCachedData(cacheKey, 60, async () => {
       const pipeline = buildSummaryPipeline(query);
       const [result] = await this.repository.aggregate(pipeline);
@@ -75,7 +72,7 @@ export class DashboardService {
     query: DashboardFilterQuery,
     groupBy: "Hour" | "Day" | "Week" | "Month",
   ) {
-    const cacheKey = this.generateCacheKey("revenue", { ...query, groupBy });
+    const cacheKey = DashboardCacheKeys.dynamic("revenue", { ...query, groupBy });
     return this.getCachedData(cacheKey, 300, async () => {
       const pipeline = buildRevenuePipeline(query, groupBy);
       return await this.repository.aggregate(pipeline);
@@ -83,7 +80,7 @@ export class DashboardService {
   }
 
   async getWeeklySales(query: DashboardFilterQuery) {
-    const cacheKey = this.generateCacheKey("weekly", query);
+    const cacheKey = DashboardCacheKeys.dynamic("weekly", query);
     return this.getCachedData(cacheKey, 300, async () => {
       const pipeline = buildRevenuePipeline(query, "Day");
       const data = await this.repository.aggregate(pipeline);
@@ -97,7 +94,7 @@ export class DashboardService {
   }
 
   async getPaymentMethod(query: DashboardFilterQuery) {
-    const cacheKey = this.generateCacheKey("payment", query);
+    const cacheKey = DashboardCacheKeys.dynamic("payment", query);
     return this.getCachedData(cacheKey, 300, async () => {
       const pipeline = buildPaymentPipeline(query);
       return await this.repository.aggregate(pipeline);
@@ -105,7 +102,7 @@ export class DashboardService {
   }
 
   async getCategorySales(query: DashboardFilterQuery) {
-    const cacheKey = this.generateCacheKey("category", query);
+    const cacheKey = DashboardCacheKeys.dynamic("category", query);
     return this.getCachedData(cacheKey, 300, async () => {
       const pipeline = buildCategoryPipeline(query);
       return await this.repository.aggregate(pipeline);
@@ -113,7 +110,7 @@ export class DashboardService {
   }
 
   async getBestSeller(query: DashboardFilterQuery) {
-    const cacheKey = this.generateCacheKey("bestseller", query);
+    const cacheKey = DashboardCacheKeys.dynamic("bestseller", query);
     return this.getCachedData(cacheKey, 600, async () => {
       const pipeline = buildBestSellerPipeline(query);
       return await this.repository.aggregate(pipeline);
@@ -121,7 +118,7 @@ export class DashboardService {
   }
 
   async getNeedUpselling(query: DashboardFilterQuery) {
-    const cacheKey = this.generateCacheKey("upselling", query);
+    const cacheKey = DashboardCacheKeys.dynamic("upselling", query);
     return this.getCachedData(cacheKey, 600, async () => {
       const pipeline = buildUpsellingPipeline(query);
       return await this.repository.aggregate(pipeline);
