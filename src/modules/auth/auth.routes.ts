@@ -34,6 +34,7 @@ const authController = new AuthController(authService);
  *         description: Unauthorized
  */
 router.post("/login", authController.login);
+router.post("/logout", authController.logout);
 
 // Protected routes
 router.use(authenticate());

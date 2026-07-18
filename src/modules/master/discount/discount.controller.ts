@@ -64,4 +64,17 @@ export class DiscountController {
       next(error);
     }
   };
+
+  validate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { code, subtotal } = req.body;
+      if (!code) {
+        return ApiResponse.badRequest(res, "Discount code is required");
+      }
+      const result = await this.service.validateDiscount(code, Number(subtotal) || 0);
+      return ApiResponse.success(res, result, "Discount is valid");
+    } catch (error) {
+      next(error);
+    }
+  };
 }

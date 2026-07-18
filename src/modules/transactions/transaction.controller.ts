@@ -21,4 +21,28 @@ export class TransactionController {
       next(error);
     }
   };
+
+  getById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await this.service.getDetailTransaction(req.params.id);
+      if (!result) {
+        return ApiResponse.error(res, "Transaction not found", 404);
+      }
+      return ApiResponse.success(res, result, "Success Fetch Detail Transaction");
+    } catch (error) {
+      next(error);
+    }
+  };
+  create = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const payload = req.body;
+      if ((req as any).user && (req as any).user.userId) {
+        payload.cashier = (req as any).user.userId;
+      }
+      const result = await this.service.create(payload);
+      return ApiResponse.created(res, result, "Successfully created transaction");
+    } catch (error) {
+      next(error);
+    }
+  };
 }

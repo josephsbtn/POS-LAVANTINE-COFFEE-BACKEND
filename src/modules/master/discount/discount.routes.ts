@@ -16,6 +16,8 @@ import { authenticate } from "../../../middleware/auth.middleware";
 // Protected routes
 discountRoutes.use(authenticate());
 
+discountRoutes.post("/validate", controller.validate);
+
 /**
  * @swagger
  * /api/master/discounts:

@@ -90,6 +90,13 @@ export class AuthService {
     try {
       const user = await this.authRepository.findById(userId);
       if (!user) throw AppError.notFound("User not found");
+      
+      return {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+        fullname: user.fullname,
+      };
     } catch (error) {
       logger.error("Server error when getMe: " + error);
       throw error;

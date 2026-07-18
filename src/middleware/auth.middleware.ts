@@ -6,19 +6,18 @@ import { AppError } from "../utils/AppError";
 export const authenticate = () => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = req.headers.authorization;
+      let token = req.cookies?.token;
 
-      if (!authHeader) {
-        return ApiResponse.unauthorized(res, "Missing authorization header");
+      if (!token) {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          token = authHeader.split(" ")[1];
+        }
       }
 
-      const parts = authHeader.split(" ");
-
-      if (parts.length !== 2 || parts[0] !== "Bearer") {
-        return ApiResponse.unauthorized(res, "Invalid authorization format");
+      if (!token) {
+        return ApiResponse.unauthorized(res, "Missing authentication token");
       }
-
-      const token = parts[1];
       const decoded = JwtService.verifyToken(token);
 
       req.user = decoded;

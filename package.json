@@ -18,10 +18,12 @@
     "dev": "nodemon --watch . --ext ts --exec tsx server.ts",
     "seed:admin": "tsx src/scripts/seedAdmin.ts",
     "seed:master": "tsx src/scripts/seedMasterData.ts",
+    "seed:dummy": "tsx src/scripts/seedDummyData.ts",
     "test:api": "tsx src/scripts/test-all-endpoints.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",

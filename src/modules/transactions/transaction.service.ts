@@ -31,8 +31,14 @@ export class TransactionService {
     try {
       const data = await CacheHelper.getOrSet(
         TransactionCacheKeys.detail(id),
-        async () => await this.repo.findById(id),
+        async () => await this.repo.findById(id, {
+          populate: [
+            { path: "cashier", select: "username" },
+            { path: "items.itemId", select: "name price imageUrl" }
+          ]
+        }),
       );
+      return data;
     } catch (error) {
       throw error;
     }
@@ -73,12 +79,14 @@ export class TransactionService {
       payload.subtotal = grandTotal;
       payload.invoiceNumber = "#LVC-" + randomInt(100, 999) + "-" + Date.now();
 
-      const discountAmount = (payload.discount?.value || 0) / 100;
-      const total = Math.max(0, grandTotal - grandTotal * discountAmount);
+      const discountAmount = payload.discount?.value || 0;
+      const tax = (grandTotal - discountAmount) * 0.12;
+      const total = Math.max(0, grandTotal - discountAmount + tax);
 
       const payloadToSave = {
         ...payload,
         totalItems,
+        tax,
         total,
       } as unknown as ITransactionCreate;
 

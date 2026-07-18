@@ -40,6 +40,8 @@ transactionRoutes.use(authenticate());
  *       200:
  *         description: List of transactions
  */
+transactionRoutes.post("/", controller.create);
 transactionRoutes.post("/get-all", controller.getAll); // Note: getAll in controller expects req.body for filter options
+transactionRoutes.get("/:id", controller.getById);
 
 export default transactionRoutes;

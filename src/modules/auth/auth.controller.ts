@@ -18,7 +18,25 @@ export class AuthController {
         validated.username,
         validated.password,
       );
+      
+      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: maxAge
+      });
+
       return ApiResponse.success(res, result, "Login successful");
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.clearCookie('token');
+      return ApiResponse.success(res, null, "Logout successful");
     } catch (error) {
       next(error);
     }

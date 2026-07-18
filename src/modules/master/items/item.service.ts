@@ -13,6 +13,7 @@ export class ItemService {
   constructor(private readonly repo: ItemRepo) {}
 
   async getAllItems(options: QueryOptions<IItemDocument> = {}) {
+    options.populate = [{ path: "modifier" }];
     return await CacheHelper.getOrSet(
       ItemCacheKeys.ALL(options),
       async () => await this.repo.findAll(options),
@@ -22,7 +23,7 @@ export class ItemService {
   async getItemById(id: string) {
     return await CacheHelper.getOrSet(
       ItemCacheKeys.detail(id),
-      async () => await this.repo.findById(id),
+      async () => await this.repo.findById(id, { populate: { path: "modifier" } }),
     );
   }
 
